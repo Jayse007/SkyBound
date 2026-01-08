@@ -1,10 +1,5 @@
-@import 'tailwindcss' important;
+@import 'tailwindcss';
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
 
 
@@ -113,17 +108,7 @@
 }
 
 
-/* @utility bg-gradient-mesh {
-    @apply bg-[url(../public/icons/gradient-mesh.svg)];
-}
 
-@utility bg-bank-green-gradient {
-    @apply bg-linear-[90deg,[#01797A]_0%,[#489399]_100%];
-}
-
-@utility bg-bank-gradient {
-    @apply bg-linear-[90deg,[#0179FE]_0%,[#4893FF]_100%];
-} */
 
 @utlity input-class {
     @apply text-16 placeholder:text-16 rounded-lg border border-gray-300 text-gray-900 placeholder:text-gray-500;
@@ -436,7 +421,7 @@
 }
 
 @utility footer_image {
-    @apply relative size-5 max-xl:w-full max-xl:flex max-xl:justify-center max-xl:items-center;
+    @apply relative size-5 max-xl:w-full max-xl:flex max-xl:justify-center max-xl:items-center flex justify-center items-center;
 }
 
   /* Sidebar */

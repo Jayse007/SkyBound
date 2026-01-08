@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "SkyBound",
   description: "SkyBound - Your Trusted Financial Partner",
   icons: {
-    icon: "/icon/logo.svg"
+    icon: "/icons/logo.svg"
   }
 };
 

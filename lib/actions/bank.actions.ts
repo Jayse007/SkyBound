@@ -45,7 +45,7 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
           type: accountData.type as string,
           subtype: accountData.subtype! as string,
           appwriteItemId: bank.$id,
-          sharaebleId: bank.shareableId,
+          shareableId: bank.shareableId,
         };
 
         return account;
@@ -67,7 +67,7 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
 export const getAccount = async ({ appwriteItemId }: getAccountProps) => {
   try {
     // get bank from db
-    const bank = await getBank({ documentId: appwriteItemId });
+    const bank = await getBank({ bankId: appwriteItemId });
 
     // get account info from plaid
     const accountsResponse = await plaidClient.accountsGet({
@@ -80,7 +80,7 @@ export const getAccount = async ({ appwriteItemId }: getAccountProps) => {
       bankId: bank.$id,
     });
 
-    const transferTransactions = transferTransactionsData.documents.map(
+    const transferTransactions = transferTransactionsData?.documents.map(
       (transferData: Transaction) => ({
         id: transferData.$id,
         name: transferData.name!,
@@ -96,6 +96,7 @@ export const getAccount = async ({ appwriteItemId }: getAccountProps) => {
     const institution = await getInstitution({
       institutionId: accountsResponse.data.item.institution_id!,
     });
+
 
     const transactions = await getTransactions({
       accessToken: bank?.accessToken,
@@ -155,6 +156,7 @@ export const getTransactions = async ({
 
   try {
     // Iterate through each page of new transaction updates for item
+    console.log("Fetching transactions for access token:", accessToken);
     while (hasMore) {
       const response = await plaidClient.transactionsSync({
         access_token: accessToken,

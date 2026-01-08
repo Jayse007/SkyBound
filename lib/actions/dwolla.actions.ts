@@ -1,6 +1,8 @@
 "use server";
 
 import { Client } from "dwolla-v2";
+import { NextApiResponse } from "next";
+import { extractCustomerIdFromUrl } from "../utils";
 
 const getEnvironment = (): "production" | "sandbox" => {
   const environment = process.env.DWOLLA_ENV as string;
@@ -23,33 +25,75 @@ const dwollaClient = new Client({
   secret: process.env.DWOLLA_SECRET as string,
 });
 
-// Create a Dwolla Funding Source using a Plaid Processor Token
+
+async function getExchangeHref(): Promise<string> {
+  const response = await dwollaClient.get("exchange-partners");
+  const partnersList = response.body._embedded["exchange-partners"];
+  
+  // Explicitly check the name property
+  const plaidPartner = partnersList.find(
+    (obj: { name: string }) => obj.name === "Plaid"
+  );
+
+  if (!plaidPartner) {
+    throw new Error("Plaid exchange partner not found in Dwolla account.");
+  }
+
+  return plaidPartner._links.self.href;
+}
+
+
+interface CreateExchangeOptions {
+  customerId: string;
+  token: string;
+}
+
+const createExchange = async (
+  options: CreateExchangeOptions
+): Promise<any> => {
+  const exchangePartnerHref = await getExchangeHref();
+  return (
+    await dwollaClient.post(`customers/${options.customerId}/exchanges`, {
+      _links: {
+        "exchange-partner": {
+          href: exchangePartnerHref,
+        },
+      },
+      token: options.token,
+    })
+  ).headers.get("location");
+}
+
+// 4. Create a funding source using the exchange
+interface CreateFundingSourceOptions {
+  customerId: string;
+  fundingSourceName: string;
+  token: string;
+  type: string | null;
+}
+
 export const createFundingSource = async (
   options: CreateFundingSourceOptions
-) => {
+): Promise<any> =>{
+  const exchangeUrl = await createExchange({customerId: options.customerId, token: options.token});
   try {
-    return await dwollaClient
-      .post(`customers/${options.customerId}/funding-sources`, {
-        name: options.fundingSourceName,
-        plaidToken: options.plaidToken,
-      })
-      .then((res) => res.headers.get("location"));
-  } catch (err) {
-    console.error("Creating a Funding Source Failed: ", err);
+    const response = await dwollaClient.post(`customers/${options.customerId}/funding-sources`, {
+      _links: {
+        exchange: {
+          href: exchangeUrl,
+        },
+      },
+      bankAccountType: options.type,
+      name: options.fundingSourceName,
+    })
+  const data = response.headers.get("location");
+  return data;
   }
-};
+  catch (error) {
+    console.log("Funding Source Error:", error);
+  }
+}
 
-export const createOnDemandAuthorization = async () => {
-  try {
-    const onDemandAuthorization = await dwollaClient.post(
-      "on-demand-authorizations"
-    );
-    const authLink = onDemandAuthorization.body._links;
-    return authLink;
-  } catch (err) {
-    console.error("Creating an On Demand Authorization Failed: ", err);
-  }
-};
 
 export const createDwollaCustomer = async (
   newCustomer: NewDwollaCustomerParams
@@ -69,6 +113,7 @@ export const createTransfer = async ({
   amount,
 }: TransferParams) => {
   try {
+   
     const requestBody = {
       _links: {
         source: {
@@ -91,24 +136,7 @@ export const createTransfer = async ({
   }
 };
 
-export const addFundingSource = async ({
-  dwollaCustomerId,
-  processorToken,
-  bankName,
-}: AddFundingSourceParams) => {
-  try {
-    // create dwolla auth link
-    const dwollaAuthLinks = await createOnDemandAuthorization();
 
-    // add funding source to the dwolla customer & get the funding source url
-    const fundingSourceOptions = {
-      customerId: dwollaCustomerId,
-      fundingSourceName: bankName,
-      plaidToken: processorToken,
-      _links: dwollaAuthLinks,
-    };
-    return await createFundingSource(fundingSourceOptions);
-  } catch (err) {
-    console.error("Transfer fund failed: ", err);
-  }
-};
+
+
+

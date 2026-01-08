@@ -40,6 +40,7 @@ declare type User = {
   postalCode: string;
   dateOfBirth: string;
   ssn: string;
+  identifier?: string;
 };
 
 declare type NewUserParams = {
@@ -120,8 +121,9 @@ declare type TransferParams = {
 
 declare type AddFundingSourceParams = {
   dwollaCustomerId: string;
-  processorToken: string;
-  bankName: string;
+  plaidToken: string;
+  accountName: string;
+  type: string | null;
 };
 
 declare type NewDwollaCustomerParams = {
@@ -274,10 +276,10 @@ declare interface getTransactionsProps {
 }
 
 declare interface CreateFundingSourceOptions {
-  customerId: string; // Dwolla Customer ID
-  fundingSourceName: string; // Dwolla Funding Source Name
-  plaidToken: string; // Plaid Account Processor Token
-  _links: object; // Dwolla On Demand Authorization Link
+  customerId: string;
+  publicToken: string;
+  type: string | null;
+  accountName: string;
 }
 
 declare interface CreateTransactionProps {
@@ -322,7 +324,7 @@ declare interface getBanksProps {
 }
 
 declare interface getBankProps {
-  documentId: string;
+  bankId: string;
 }
 
 declare interface getBankByAccountIdProps {
