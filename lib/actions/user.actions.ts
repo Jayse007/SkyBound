@@ -6,7 +6,7 @@ import { ID, Models, Query } from "node-appwrite";
 import { encryptId, extractCustomerIdFromUrl, parseStringify } from "../utils";
 import { CountryCode, ProcessorTokenCreateRequest, ProcessorTokenCreateRequestProcessorEnum, Products } from "plaid";
 import { plaidClient } from "@/lib/plaid";
-import { addFundingSource, createDwollaCustomer, createFundingSource} from "./dwolla.actions";
+import { createDwollaCustomer, createFundingSource} from "./dwolla.actions";
 import { revalidatePath } from "next/cache";
 
 const {
